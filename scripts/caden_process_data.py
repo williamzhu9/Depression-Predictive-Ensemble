@@ -1,70 +1,72 @@
 import pandas as pd
 from pathlib import Path
 
-# ----- PATHS -----
-BASE_DIR = Path(__file__).resolve().parent         
-PROJECT_ROOT = BASE_DIR.parent                      
+BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parent
 
 INPUT_PATH = PROJECT_ROOT / "raw" / "depression_anxiety_data.csv"
 OUTPUT_PATH = PROJECT_ROOT / "staging" / "depression_anxiety_standardized.csv"
 OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
+
 def standardize_demographics(df: pd.DataFrame) -> pd.DataFrame:
+
     if "school_year" in df.columns:
-        edu_map = {
-            1: "university undergrad",
-            2: "university undergrad",
-            3: "university undergrad",
-            4: "university undergrad",
-        }
-        df["education_current"] = df["school_year"].map(edu_map)
-        df["education_level"] = "bachelors degree"
+        df["education_level"] = "bachelors degree"   # your requirement
+    
 
     df["employment_status_standard"] = "unemployed"
+
+
+    df = df.drop(columns=["school_year", "education_current"], errors="ignore")
+
     return df
+
 
 
 def standardize_sleep(df: pd.DataFrame) -> pd.DataFrame:
-    def estimate_sleep_hours(row):
-        score = row.get("epworth_score")
+    """
+    Sleep quality must be derived directly from Epworth, with a 4-category scale.
+    Categories aligned to Copper's clinical interpretation but mapped into the
+    user's 4 discrete bins:
+        - <5  → poor
+        - 5-6 → fair
+        - 7-8 → good
+        - 9+  → excellent
+    """
+
+    def classify_sleep(row):
+        epw = row.get("epworth_score")
         sleepy = row.get("sleepiness")
 
-        if pd.notna(score):
-            try:
-                score = float(score)
-            except (TypeError, ValueError):
-                score = None
+        try:
+            epw = float(epw)
+        except (TypeError, ValueError):
+            epw = None
 
-        if score is not None:
-            est_hours = 9 - (score / 4.0)
-            est_hours = max(3.0, min(10.0, est_hours))
-            return int(est_hours)
+ 
+        if epw is not None:
+            if epw <= 3:
+                return "excellent"      
+            elif 4 <= epw <= 6:
+                return "good"           
+            elif 7 <= epw <= 8:
+                return "fair"           
+            elif epw >= 9:
+                return "poor"           
+
 
         sleepy_str = str(sleepy).strip().lower()
         if sleepy_str == "true":
-            return 5
+            return "fair"
         elif sleepy_str == "false":
-            return 8
-        return None
+            return "good"
 
-    if "epworth_score" in df.columns or "sleepiness" in df.columns:
-        df["sleep_quality_score"] = df.apply(estimate_sleep_hours, axis=1)
+        return "unknown"
 
-        def classify_from_score(x):
-            if pd.isna(x):
-                return "unknown"
-            if x < 6:
-                return "poor"
-            elif 6 <= x <= 7:
-                return "fair"
-            else:
-                return "good"
-
-        df["sleep_quality_cat"] = df["sleep_quality_score"].apply(classify_from_score)
-
+    df["sleep_quality_cat"] = df.apply(classify_sleep, axis=1)
     return df
-
 
 def standardize_bmi(df: pd.DataFrame) -> pd.DataFrame:
     if "who_bmi" in df.columns:
@@ -93,6 +95,8 @@ def _parse_bool_like(series: pd.Series) -> pd.Series:
 
 def standardize_depression(df: pd.DataFrame) -> pd.DataFrame:
     if "phq_score" in df.columns:
+
+
         bins = [-1, 4, 9, 14, 19, 27]
         labels = [0, 1, 2, 3, 4]
 
@@ -103,18 +107,17 @@ def standardize_depression(df: pd.DataFrame) -> pd.DataFrame:
         df["depression_any_symptoms"] = (df["phq_score"] >= 5).astype("Int64")
 
         if "depression_diagnosis" in df.columns:
-            diag_true = _parse_bool_like(df["depression_diagnosis"])
-            df["depression_diagnosed"] = diag_true.astype("Int64")
+            df["depression_diagnosed"] = _parse_bool_like(df["depression_diagnosis"]).astype("Int64")
 
         if "depression_treatment" in df.columns:
-            treated_true = _parse_bool_like(df["depression_treatment"])
-            df["depression_treated"] = treated_true.astype("Int64")
+            df["depression_treated"] = _parse_bool_like(df["depression_treatment"]).astype("Int64")
 
     return df
 
 
 def standardize_anxiety(df: pd.DataFrame) -> pd.DataFrame:
     if "gad_score" in df.columns:
+
         bins = [-1, 4, 9, 14, 21]
         labels = [0, 1, 2, 3]
 
@@ -125,12 +128,10 @@ def standardize_anxiety(df: pd.DataFrame) -> pd.DataFrame:
         df["anxiety_any_symptoms"] = (df["gad_score"] >= 5).astype("Int64")
 
         if "anxiety_diagnosis" in df.columns:
-            diag_true = _parse_bool_like(df["anxiety_diagnosis"])
-            df["anxiety_diagnosed"] = diag_true.astype("Int64")
+            df["anxiety_diagnosed"] = _parse_bool_like(df["anxiety_diagnosis"]).astype("Int64")
 
         if "anxiety_treatment" in df.columns:
-            treated_true = _parse_bool_like(df["anxiety_treatment"])
-            df["anxiety_treated"] = treated_true.astype("Int64")
+            df["anxiety_treated"] = _parse_bool_like(df["anxiety_treatment"]).astype("Int64")
 
     return df
 
@@ -145,8 +146,7 @@ def main():
     df = standardize_depression(df)
     df = standardize_anxiety(df)
 
-    df = df.dropna()
-
+    
     cols_to_drop = [
         "id",
         "bmi",
@@ -156,14 +156,12 @@ def main():
         "suicidal",
         "depression_diagnosis",
         "depression_treatment",
-        "gad_score",
         "anxiety_severity",
         "anxiousness",
         "anxiety_diagnosis",
         "anxiety_treatment",
-        "epworth_score",
         "sleepiness",
-        "phq_score",
+        "epworth_score",
     ]
     df = df.drop(columns=cols_to_drop, errors="ignore")
 
