@@ -26,15 +26,6 @@ def standardize_demographics(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def standardize_sleep(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Sleep quality must be derived directly from Epworth, with a 4-category scale.
-    Categories aligned to Copper's clinical interpretation but mapped into the
-    user's 4 discrete bins:
-        - <5  → poor
-        - 5-6 → fair
-        - 7-8 → good
-        - 9+  → excellent
-    """
 
     def classify_sleep(row):
         epw = row.get("epworth_score")
@@ -164,6 +155,8 @@ def main():
         "epworth_score",
     ]
     df = df.drop(columns=cols_to_drop, errors="ignore")
+    df = df.dropna()
+
 
     df.to_csv(OUTPUT_PATH, index=False)
     print(f"Saved standardized file to: {OUTPUT_PATH.resolve()}")

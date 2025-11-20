@@ -10,7 +10,6 @@ age,gender,phq_score,gad_score,education_level,employment_status_standard,sleep_
 20,male,11,8,bachelors degree,unemployed,fair,3.0,2,1,0,0,1,1,0,0
 19,male,6,4,bachelors degree,unemployed,poor,3.0,1,1,0,0,0,0,0,0
 18,male,2,2,bachelors degree,unemployed,good,3.0,0,0,0,0,0,0,0,0
-18,female,8,4,bachelors degree,unemployed,fair,,1,1,0,0,0,0,0,0
 19,male,9,4,bachelors degree,unemployed,poor,2.0,1,1,0,0,0,0,0,0
 18,male,6,7,bachelors degree,unemployed,poor,3.0,1,1,0,0,1,1,0,0
 18,male,10,11,bachelors degree,unemployed,excellent,3.0,2,1,0,0,2,1,0,0
@@ -49,7 +48,6 @@ age,gender,phq_score,gad_score,education_level,employment_status_standard,sleep_
 18,male,4,2,bachelors degree,unemployed,excellent,3.0,0,0,0,0,0,0,0,0
 18,female,5,4,bachelors degree,unemployed,good,3.0,1,1,0,0,0,0,0,0
 18,female,3,4,bachelors degree,unemployed,excellent,3.0,0,0,0,0,0,0,0,0
-20,female,6,4,bachelors degree,unemployed,fair,,1,1,0,0,0,0,0,0
 18,male,2,3,bachelors degree,unemployed,fair,3.0,0,0,0,0,0,0,0,0
 18,female,8,13,bachelors degree,unemployed,poor,3.0,1,1,0,1,2,1,0,0
 18,female,7,6,bachelors degree,unemployed,poor,3.0,1,1,0,0,1,1,0,0
@@ -126,7 +124,6 @@ age,gender,phq_score,gad_score,education_level,employment_status_standard,sleep_
 18,female,7,7,bachelors degree,unemployed,poor,3.0,1,1,0,0,1,1,0,0
 18,male,18,10,bachelors degree,unemployed,fair,1.0,3,1,0,0,2,1,0,0
 19,female,2,1,bachelors degree,unemployed,excellent,3.0,0,0,0,0,0,0,0,0
-18,male,8,6,bachelors degree,unemployed,good,,1,1,0,0,1,1,0,0
 19,male,13,19,bachelors degree,unemployed,poor,3.0,2,1,0,0,3,1,0,0
 18,female,17,16,bachelors degree,unemployed,excellent,2.0,3,1,1,1,3,1,1,1
 18,female,11,4,bachelors degree,unemployed,good,3.0,2,1,1,1,0,0,0,0
@@ -156,7 +153,6 @@ age,gender,phq_score,gad_score,education_level,employment_status_standard,sleep_
 18,female,13,11,bachelors degree,unemployed,good,3.0,2,1,0,0,2,1,0,0
 18,female,2,7,bachelors degree,unemployed,good,1.0,0,0,0,0,1,1,0,0
 18,female,7,4,bachelors degree,unemployed,good,3.0,1,1,0,0,0,0,0,0
-18,male,2,1,bachelors degree,unemployed,fair,,0,0,0,0,0,0,0,0
 20,male,18,19,bachelors degree,unemployed,poor,2.0,3,1,1,1,3,1,1,1
 18,female,9,3,bachelors degree,unemployed,fair,1.0,1,1,0,0,0,0,0,0
 18,male,5,6,bachelors degree,unemployed,excellent,3.0,1,1,0,0,1,1,0,0
@@ -333,7 +329,6 @@ age,gender,phq_score,gad_score,education_level,employment_status_standard,sleep_
 19,male,3,1,bachelors degree,unemployed,excellent,3.0,0,0,0,0,0,0,0,0
 18,female,6,7,bachelors degree,unemployed,excellent,3.0,1,1,0,0,1,1,0,0
 21,male,4,10,bachelors degree,unemployed,excellent,3.0,0,0,0,0,2,1,0,0
-19,male,3,0,bachelors degree,unemployed,fair,,0,0,0,0,0,0,0,0
 20,male,9,5,bachelors degree,unemployed,excellent,3.0,1,1,0,0,1,1,0,0
 19,female,6,10,bachelors degree,unemployed,good,3.0,1,1,0,0,2,1,0,0
 19,female,6,7,bachelors degree,unemployed,excellent,3.0,1,1,0,0,1,1,0,1
@@ -524,7 +519,6 @@ age,gender,phq_score,gad_score,education_level,employment_status_standard,sleep_
 20,male,2,0,bachelors degree,unemployed,fair,3.0,0,0,0,0,0,0,0,0
 21,female,9,8,bachelors degree,unemployed,fair,3.0,1,1,1,0,1,1,0,0
 20,male,1,1,bachelors degree,unemployed,fair,3.0,0,0,0,0,0,0,0,0
-21,female,4,0,bachelors degree,unemployed,fair,,0,0,0,0,0,0,0,0
 19,female,5,4,bachelors degree,unemployed,excellent,2.0,1,1,0,0,0,0,0,0
 20,male,12,16,bachelors degree,unemployed,excellent,3.0,2,1,1,0,3,1,1,0
 22,female,1,2,bachelors degree,unemployed,good,3.0,0,0,0,0,0,0,0,0
@@ -554,7 +548,6 @@ age,gender,phq_score,gad_score,education_level,employment_status_standard,sleep_
 21,female,7,3,bachelors degree,unemployed,good,3.0,1,1,0,0,0,0,0,0
 23,female,12,8,bachelors degree,unemployed,poor,3.0,2,1,0,0,1,1,0,0
 23,male,9,7,bachelors degree,unemployed,excellent,2.0,1,1,0,0,1,1,0,0
-21,female,4,4,bachelors degree,unemployed,excellent,,0,0,1,1,0,0,1,1
 22,female,4,4,bachelors degree,unemployed,poor,3.0,0,0,0,0,0,0,0,0
 21,female,3,2,bachelors degree,unemployed,good,3.0,0,0,0,0,0,0,0,0
 21,male,1,1,bachelors degree,unemployed,good,2.0,0,0,0,0,0,0,0,0
@@ -647,7 +640,6 @@ age,gender,phq_score,gad_score,education_level,employment_status_standard,sleep_
 21,female,12,8,bachelors degree,unemployed,excellent,3.0,2,1,1,1,1,1,1,0
 21,female,5,4,bachelors degree,unemployed,poor,3.0,1,1,1,1,0,0,0,0
 21,male,0,0,bachelors degree,unemployed,excellent,3.0,0,0,0,0,0,0,0,0
-22,female,11,6,bachelors degree,unemployed,poor,,2,1,1,1,1,1,1,1
 22,male,3,5,bachelors degree,unemployed,good,2.0,0,0,0,0,1,1,0,0
 21,female,5,6,bachelors degree,unemployed,fair,1.0,1,1,0,0,1,1,0,0
 21,female,3,0,bachelors degree,unemployed,good,3.0,0,0,0,0,0,0,1,1
