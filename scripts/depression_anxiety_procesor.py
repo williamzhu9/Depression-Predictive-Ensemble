@@ -1,171 +1,112 @@
 import pandas as pd
 from pathlib import Path
+from sklearn.model_selection import train_test_split
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 
 INPUT_PATH = PROJECT_ROOT / "raw" / "depression_anxiety_data.csv"
 OUTPUT_PATH = PROJECT_ROOT / "staging" / "depression_anxiety_standardized.csv"
+STAGING_DIR = OUTPUT_PATH.parent
 OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
-
-def standardize_demographics(df: pd.DataFrame) -> pd.DataFrame:
-
-    if "school_year" in df.columns:
-        df["education_level"] = "bachelors degree"
-        df["employment_status"] = "unemployed"
-    else:
-        df["education_level"] = None
-        df["employment_status"] = None
-
-    df = df.drop(columns=["school_year"], errors="ignore")
-
-    return df
-
-def standardize_sleep(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Sleep quality must be derived directly from Epworth, with a 4-category scale.
-    Categories aligned to clinical interpretation but mapped into the
-    user's 4 discrete bins:
-        - <5  → poor
-        - 5-6 → fair
-        - 7-8 → good
-        - 9+  → excellent
-    """
-
-    def classify_sleep(row):
-        epw = row.get("epworth_score")
-        sleepy = row.get("sleepiness")
-
-        try:
-            epw = float(epw)
-        except (TypeError, ValueError):
-            epw = None
-
-        # Ranges taken from official EPW score classification, scores above 10 indicate problems with sleep habits, scores below 10 are normal
-        if epw is not None:
-            if epw <= 5:
-                return "excellent"      
-            elif 6 <= epw <= 10:
-                return "good"           
-            elif 11 <= epw <= 15:
-                return "bad"           
-            elif epw > 15:
-                return "poor"           
-        return "unknown"
-
-    df["sleep_quality"] = df.apply(classify_sleep, axis=1)
-    return df
-
-def standardize_bmi(df: pd.DataFrame) -> pd.DataFrame:
-    if "who_bmi" in df.columns:
-        health_score_map = {
-            "Normal": 3,
-            "Underweight": 1,
-            "Overweight": 2,
-            "Class I Obesity": 1,
-            "Class II Obesity": 0,
-            "Class III Obesity": 0,
-            "Not Availble": None,
-            "Not Available": None,
-        }
-        num_as_health = {
-            1: "unhealthy",
-            2: "moderate",
-            3: "healthy"
-        }
-        df["health_risks"] = df["who_bmi"].map(health_score_map).map(num_as_health)
-    return df
-
-
-def _parse_bool_like(series: pd.Series) -> pd.Series:
+def bool_to_int(series: pd.Series) -> pd.Series:
     return (
         series.astype(str)
         .str.strip()
         .str.lower()
         .isin({"true", "1", "yes", "y"})
+        .astype("Int64")
     )
 
 
-def standardize_depression(df: pd.DataFrame) -> pd.DataFrame:
-    if "phq_score" in df.columns:
-
-
-        bins = [-1, 4, 9, 14, 19, 27]
-        labels = [0, 1, 2, 3, 4]
-
-        df["depression_severity_score"] = pd.cut(
-            df["phq_score"], bins=bins, labels=labels
-        ).astype("Int64")
-
-        df["depression_any_symptoms"] = (df["phq_score"] >= 5).astype("Int64")
-
-        if "depression_diagnosis" in df.columns:
-            df["depression_diagnosed"] = _parse_bool_like(df["depression_diagnosis"]).astype("Int64")
-
-        if "depression_treatment" in df.columns:
-            df["depression_treated"] = _parse_bool_like(df["depression_treatment"]).astype("Int64")
-
-    return df
-
-
-def standardize_anxiety(df: pd.DataFrame) -> pd.DataFrame:
-    if "gad_score" in df.columns:
-
-        bins = [-1, 4, 9, 14, 21]
-        labels = [0, 1, 2, 3]
-
-        df["anxiety_severity_score"] = pd.cut(
-            df["gad_score"], bins=bins, labels=labels
-        ).astype("Int64")
-
-        df["anxiety_any_symptoms"] = (df["gad_score"] >= 5).astype("Int64")
-
-        if "anxiety_diagnosis" in df.columns:
-            df["anxiety_diagnosed"] = _parse_bool_like(df["anxiety_diagnosis"]).astype("Int64")
-
-        if "anxiety_treatment" in df.columns:
-            df["anxiety_treated"] = _parse_bool_like(df["anxiety_treatment"]).astype("Int64")
-
-    return df
-
-def main():
-    df_raw = pd.read_csv(INPUT_PATH)
-    df = df_raw.copy()
-
-    df = standardize_demographics(df)
-    df = standardize_sleep(df)
-    df = standardize_bmi(df)
-    df = standardize_depression(df)
-    df = standardize_anxiety(df)
-
-    
-    cols_to_drop = [
-        "id",
+def standardize_types(df: pd.DataFrame) -> pd.DataFrame:
+    numeric_cols = [
+        "school_year",
+        "age",
         "bmi",
-        "who_bmi",
-        "depression_severity",
+        "phq_score",
+        "gad_score",
+        "epworth_score",
+    ]
+    for col in numeric_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    bool_cols = [
         "depressiveness",
         "suicidal",
         "depression_diagnosis",
         "depression_treatment",
-        "anxiety_severity",
         "anxiousness",
         "anxiety_diagnosis",
         "anxiety_treatment",
         "sleepiness",
-        "epworth_score",
     ]
-    df = df.drop(columns=cols_to_drop, errors="ignore")
-    df.dropna(inplace=True)
-    first_cols = ["gender", "age", "education_level", "employment_status", "sleep_quality", "health_risks"]
-    other_cols = [col for col in df.columns if col not in first_cols]
-    new_order = first_cols + other_cols
-    df = df[new_order]
+    
+    for col in bool_cols:
+        if col in df.columns:
+            df[col] = bool_to_int(df[col])
 
-    df.to_csv(OUTPUT_PATH, index=False)
-    print(f"Saved standardized file to: {OUTPUT_PATH.resolve()}")
+
+    if "gender" in df.columns:
+        df["gender"] = df["gender"].astype(str).str.strip().str.lower()
+
+    return df
+
+
+def one_hot_encode(df, cols):
+    cols = [c for c in cols if c in df.columns]
+    if not cols:
+        return df
+    dummies = pd.get_dummies(df[cols], prefix=cols, dtype="uint8")
+    df_enc = pd.concat([df.drop(columns=cols), dummies], axis=1)
+    return df_enc
+
+
+
+def split_and_save_train_test(df: pd.DataFrame, target_col: str, output_dir: Path,):
+    X = df.drop(columns=[target_col])
+    y = df[target_col]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size = 0.20,
+        random_state = 42,
+        stratify=y,
+    )
+
+    train_df = pd.concat([X_train, y_train], axis=1)
+    test_df = pd.concat([X_test, y_test], axis=1)
+
+    train_path = output_dir / "depression_anxiety_train.csv"
+    test_path = output_dir / "depression_anxiety_test.csv"
+
+    train_df.to_csv(train_path, index=False)
+    test_df.to_csv(test_path, index=False)
+
+
+def main():
+    df = pd.read_csv(INPUT_PATH)
+
+    if "id" in df.columns:
+        df = df.drop(columns=["id"])
+
+    df = standardize_types(df)
+    
+    one_hot_cols = ['gender', 'who_bmi', 'depression_severity', 'anxiety_severity']
+    
+    df = one_hot_encode(df, one_hot_cols)
+    
+    df.to_csv(OUTPUT_PATH, index=False) 
+    
+    split_and_save_train_test(
+        df=df,
+        target_col="depression_diagnosis",
+        output_dir = STAGING_DIR
+    )
 
 if __name__ == "__main__":
     main()
