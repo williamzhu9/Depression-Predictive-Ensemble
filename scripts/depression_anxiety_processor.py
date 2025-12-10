@@ -6,8 +6,8 @@ BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 
 INPUT_PATH = PROJECT_ROOT / "raw" / "depression_anxiety_data.csv"
-OUTPUT_PATH = PROJECT_ROOT / "staging" / "depression_anxiety_standardized.csv"
-STAGING_DIR = OUTPUT_PATH.parent
+OUTPUT_PATH = PROJECT_ROOT / "pre_processed" / "processed_depression_anxiety.csv"
+PROCESSED_DIR = OUTPUT_PATH.parent
 OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
@@ -105,7 +105,7 @@ def main():
     split_and_save_train_test(
         df=df,
         target_col="depression_diagnosis",
-        output_dir = STAGING_DIR
+        output_dir = PROCESSED_DIR
     )
 
 if __name__ == "__main__":

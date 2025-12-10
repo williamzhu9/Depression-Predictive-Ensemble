@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 
 # Load CSV
-df = pd.read_csv("../staging/processed_anxiety_depression_data.csv")
+df = pd.read_csv("../pre_processed/processed_anxiety_depression_data.csv")
 
 # Separate features/labels
 X = df.drop("is_depressed", axis=1)

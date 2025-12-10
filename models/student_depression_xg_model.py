@@ -6,7 +6,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 import xgboost as xgb
 
 # Load CSV
-df = pd.read_csv("../staging/processed_student_depression_dataset.csv")
+df = pd.read_csv("../pre_processed/processed_student_depression_dataset.csv")
 
 # Separate features and labels
 X = df.drop("depression", axis=1)
