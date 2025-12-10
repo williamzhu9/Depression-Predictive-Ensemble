@@ -5,9 +5,9 @@ from ensemble import weighted_vote
 # -----------------------------
 # Step 1: Load models
 # -----------------------------
-from models.model_a import get_model as load_model_a
-from models.model_b import get_model as load_model_b
-from models.model_c import get_model as load_model_c
+from train_models.models.model_a import get_model as load_model_a
+from train_models.models.models.model_b import get_model as load_model_b
+from train_models.models.models.model_c import get_model as load_model_c
 
 # Load trained models
 models = [
