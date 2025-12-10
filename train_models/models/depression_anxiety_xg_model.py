@@ -12,8 +12,8 @@ from sklearn.model_selection import train_test_split
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 TARGET_COL = "depression_diagnosis"
-TRAIN_PATH = PROJECT_ROOT / "pre_processed" / "depression_anxiety_train.csv"
-TEST_PATH = PROJECT_ROOT / "pre_processed" / "depression_anxiety_test.csv"
+TRAIN_PATH = PROJECT_ROOT / "pre_processed" / "depression_anxiety_data_train.csv"
+TEST_PATH = PROJECT_ROOT / "pre_processed" / "depression_anxiety_data_test.csv"
 
 # Load training & testing data
 def load_XY(train_path: str = TRAIN_PATH, test_path: str = TEST_PATH, target_col: str = TARGET_COL):
