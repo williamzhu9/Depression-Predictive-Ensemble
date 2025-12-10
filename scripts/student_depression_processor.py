@@ -97,5 +97,5 @@ new_order = other_cols + last_cols
 df = df[new_order]
 
 # Write processed data to csv
-df.to_csv("../staging/processed_student_depression_dataset.csv",index=False)
-print("Write successful to staging/processed_student_depression_dataset.csv")
+df.to_csv("../pre_processed/processed_student_depression.csv",index=False)
+print("Write successful to pre_processed/processed_student_depression.csv")

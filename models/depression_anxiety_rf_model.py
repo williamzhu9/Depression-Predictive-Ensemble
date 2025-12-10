@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np
 import pandas as pd
-import xgboost as xgb
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     roc_auc_score,
     log_loss,
@@ -14,10 +14,8 @@ from sklearn.model_selection import train_test_split
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 TARGET_COL = "depression_diagnosis"
-TRAIN_PATH = PROJECT_ROOT/"staging"/"depression_anxiety_train.csv"
-TEST_PATH = PROJECT_ROOT/"staging"/"depression_anxiety_test.csv"
-
-
+TRAIN_PATH = PROJECT_ROOT/"pre_processed"/"depression_anxiety_train.csv"
+TEST_PATH = PROJECT_ROOT/"pre_processed"/"depression_anxiety_test.csv"
 
 def load_XY(
     train_path: str = TRAIN_PATH,
@@ -53,7 +51,6 @@ def baseline_logloss_from_rate(p: float) -> float:
     return -(p * np.log(p + eps) + (1 - p) * np.log(1 - p + eps))
 
 
-
 def main():
     X_train, X_valid, X_test, y_train, y_valid, y_test = load_XY()
 
@@ -62,49 +59,28 @@ def main():
     print(f"  X_valid: {X_valid.shape}, y_valid: {y_valid.shape}")
     print(f"  X_test : {X_test.shape},  y_test : {y_test.shape}")
 
-    dtrain = xgb.DMatrix(X_train, label=y_train)
-    dvalid = xgb.DMatrix(X_valid, label=y_valid)
-    dtest = xgb.DMatrix(X_test, label=y_test)
-
     pos = float(y_train.sum())
     neg = float(len(y_train) - y_train.sum())
-    scale_pos_weight = (neg / pos) if pos > 0 else 1.0
-    print(f"\nscale_pos_weight: {scale_pos_weight:.3f}")
+    class_weight = {0: 1, 1: neg/pos} if pos > 0 else "balanced"
+    print(f"\nClass weight for positive class: {class_weight}")
 
-    params = {
-        "objective": "binary:logistic",
-        "eval_metric": ["logloss", "auc", "aucpr"], 
-        "eta": 0.03,             
-        "max_depth": 3,           
-        "min_child_weight": 10,   
-        "subsample": 0.8,
-        "colsample_bytree": 0.8,
-        "reg_lambda": 3.0,       
-        "reg_alpha": 0.2,        
-        "scale_pos_weight": scale_pos_weight,
-        "tree_method": "hist",
-        "seed": 42,
-        "nthread": 8,
-    }
-
-    evals = [(dtrain, "train"), (dvalid, "valid")]
-    evals_result = {}
-
-    model = xgb.train(
-        params=params,
-        dtrain=dtrain,
-        evals=evals,
-        num_boost_round=4000,
-        early_stopping_rounds=50,
-        verbose_eval=50,
-        evals_result=evals_result,
+    model = RandomForestClassifier(
+        n_estimators=300,
+        max_depth=None,
+        min_samples_split=2,
+        class_weight=class_weight,
+        random_state=42,
+        n_jobs=-1
     )
 
-    y_pred_valid = model.predict(dvalid, iteration_range=(0, model.best_iteration + 1))
-    y_pred_valid_bin = (y_pred_valid >= 0.5).astype(int)
+    print("\nTraining Random Forest model...")
+    model.fit(X_train, y_train)
 
-    val_auc = roc_auc_score(y_valid, y_pred_valid)
-    val_logloss = log_loss(y_valid, y_pred_valid)
+    y_pred_valid_prob = model.predict_proba(X_valid)[:, 1]
+    y_pred_valid_bin = (y_pred_valid_prob >= 0.5).astype(int)
+
+    val_auc = roc_auc_score(y_valid, y_pred_valid_prob)
+    val_logloss = log_loss(y_valid, y_pred_valid_prob)
     val_acc = accuracy_score(y_valid, y_pred_valid_bin)
 
     print("\nValidation Results:")
@@ -117,11 +93,11 @@ def main():
     print(f"\nValid positive rate: {p_valid:.4f}")
     print(f"Baseline logloss (predict mean): {base_ll:.4f}")
 
-    y_pred_test = model.predict(dtest, iteration_range=(0, model.best_iteration + 1))
-    y_pred_test_bin = (y_pred_test >= 0.5).astype(int)
+    y_pred_test_prob = model.predict_proba(X_test)[:, 1]
+    y_pred_test_bin = (y_pred_test_prob >= 0.5).astype(int)
 
-    test_auc = roc_auc_score(y_test, y_pred_test)
-    test_logloss = log_loss(y_test, y_pred_test)
+    test_auc = roc_auc_score(y_test, y_pred_test_prob)
+    test_logloss = log_loss(y_test, y_pred_test_prob)
     test_acc = accuracy_score(y_test, y_pred_test_bin)
 
     print("\nTest Results:")
@@ -129,25 +105,22 @@ def main():
     print(f"  LogLoss:    {test_logloss:.4f}")
     print(f"  Accuracy@0.5: {test_acc:.4f}")
 
-    gain = model.get_score(importance_type="gain")
-    imp = pd.Series(gain).sort_values(ascending=False)
-    print("\nTop 20 feature importances (gain):")
+    imp = pd.Series(model.feature_importances_, index=X_train.columns).sort_values(ascending=False)
+    print("\nTop 20 feature importances:")
     print(imp.head(20))
 
-    prec, rec, thr = precision_recall_curve(y_valid, y_pred_valid)
+    prec, rec, thr = precision_recall_curve(y_valid, y_pred_valid_prob)
     f1 = (2 * prec * rec) / (prec + rec + 1e-12)
     best_idx = int(np.nanargmax(f1))
     best_thr = thr[best_idx] if best_idx < len(thr) else 0.5
     best_f1 = float(f1[best_idx])
-
     print(f"\nBest F1 threshold on valid: {best_thr:.3f}, F1={best_f1:.4f}")
 
-    y_test_bin_tuned = (y_pred_test >= best_thr).astype(int)
+    y_test_bin_tuned = (y_pred_test_prob >= best_thr).astype(int)
     test_acc_tuned = accuracy_score(y_test, y_test_bin_tuned)
     tn, fp, fn, tp = confusion_matrix(y_test, y_test_bin_tuned).ravel()
     print(f"Test Accuracy (tuned threshold): {test_acc_tuned:.4f}")
     print(f"Confusion Matrix @tuned threshold: TN={tn} FP={fp} FN={fn} TP={tp}")
-
 
 
 if __name__ == "__main__":
