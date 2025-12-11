@@ -64,8 +64,7 @@ def preprocess_student_depression(df: pd.DataFrame) -> pd.DataFrame:
     # Drop missing or useless data
     df.columns = df.columns.str.lower()
 
-    if 'sleep duration' in df.columns:
-        df = df[~df['sleep duration'].isin(['Others'])]
+    df = df[~df['sleep duration'].isin(['Others'])]
     drop_cols = [col for col in ['id', 'city'] if col in df.columns]
     df = df.drop(columns=drop_cols)
     
@@ -94,7 +93,6 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.dirname(processed_path)):
         os.makedirs(os.path.dirname(processed_path))
     
-    df_raw = pd.read_csv(raw_path)
-    df_processed = preprocess_student_depression(df_raw)
+    df_processed = preprocess_student_depression(pd.read_csv(raw_path))
     df_processed.to_csv(processed_path, index=False)
     print(f"Write successful to {processed_path}")

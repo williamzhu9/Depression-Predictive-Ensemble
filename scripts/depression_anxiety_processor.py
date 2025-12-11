@@ -1,117 +1,74 @@
 import pandas as pd
-from pathlib import Path
-from sklearn.model_selection import train_test_split
+import os
 
-BASE_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = BASE_DIR.parent
+# Mappings
+gender_map = {
+    "male": 1,
+    "female": 0
+}
 
-INPUT_PATH = PROJECT_ROOT / "raw" / "training" / "depression_anxiety_data.csv"
-OUTPUT_PATH = PROJECT_ROOT / "pre_processed" / "processed_depression_anxiety.csv"
-PROCESSED_DIR = OUTPUT_PATH.parent
-OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+who_bmi_map = {
+    "Underweight": 0,
+    "Normal": 1,
+    "Overweight": 2,
+    "Class I Obesity": 3,
+    "Class II Obesity": 4,
+    "Class III Obesity": 5
+}
 
+severity_map = {
+    "None-minimal": 0,
+    "Mild": 1,
+    "Moderate": 2,
+    "Moderately severe": 3,
+    "Severe": 4
+}
 
-def bool_to_int(series: pd.Series) -> pd.Series:
-    return (
-        series.astype(str)
-        .str.strip()
-        .str.lower()
-        .isin({"true", "1", "yes", "y"})
-        .astype("Int64")
-    )
+boolean_map = {
+    True: 1,
+    False: 0
+}
 
-
-def standardize_types(df: pd.DataFrame) -> pd.DataFrame:
-    numeric_cols = [
-        "school_year",
-        "age",
-        "bmi",
-        "phq_score",
-        "gad_score",
-        "epworth_score",
-    ]
-    for col in numeric_cols:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
-
-    bool_cols = [
-        "depressiveness",
-        "suicidal",
-        "depression_diagnosis",
-        "depression_treatment",
-        "anxiousness",
-        "anxiety_diagnosis",
-        "anxiety_treatment",
-        "sleepiness",
-    ]
+def preprocess_depression_anxiety(df: pd.DataFrame) -> pd.DataFrame:
+    df.columns = df.columns.str.lower()
     
-    for col in bool_cols:
+    df = df.dropna(axis=0)
+
+    # Dropping these because of leakage
+    drop_cols = [col for col in [
+        'id',
+        'depression_diagnosis', 
+        'depression_treatment', 
+        'depression_severity', 
+        'suicidal'
+    ] if col in df.columns]
+
+    df = df.drop(drop_cols, axis=1)
+    df = df[~df['who_bmi'].isin(['Not Availble'])]
+    
+    df['gender'] = df['gender'].str.lower().map(gender_map)
+    df['who_bmi'] = df['who_bmi'].map(who_bmi_map)
+    df['anxiety_severity'] = df['anxiety_severity'].map(severity_map)
+    
+    # Map boolean columns
+    boolean_cols = ['depressiveness', 'sleepiness', 'anxiousness', 'anxiety_diagnosis', 'anxiety_treatment']
+    for col in boolean_cols:
         if col in df.columns:
-            df[col] = bool_to_int(df[col])
-
-
-    if "gender" in df.columns:
-        df["gender"] = df["gender"].astype(str).str.strip().str.lower()
+            df[col] = df[col].map(boolean_map)
+    
+    last_cols = [col for col in boolean_cols if col in df.columns]
+    other_cols = [col for col in df.columns if col not in last_cols]
+    df = df[other_cols + last_cols]
 
     return df
 
-
-def one_hot_encode(df, cols):
-    cols = [c for c in cols if c in df.columns]
-    if not cols:
-        return df
-    dummies = pd.get_dummies(df[cols], prefix=cols, dtype="uint8")
-    df_enc = pd.concat([df.drop(columns=cols), dummies], axis=1)
-    return df_enc
-
-
-
-def split_and_save_train_test(df: pd.DataFrame, target_col: str, output_dir: Path,):
-    X = df.drop(columns=[target_col])
-    y = df[target_col]
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
-        test_size = 0.20,
-        random_state = 42,
-        stratify=y,
-    )
-
-    train_df = pd.concat([X_train, y_train], axis=1)
-    test_df = pd.concat([X_test, y_test], axis=1)
-
-    train_path = output_dir / "depression_anxiety_train.csv"
-    test_path = output_dir / "depression_anxiety_test.csv"
-
-    train_df.to_csv(train_path, index=False)
-    test_df.to_csv(test_path, index=False)
-
-
-def main():
-    df = pd.read_csv(INPUT_PATH)
-
-    if "id" in df.columns:
-        df = df.drop(columns=["id"])
-
-    df = standardize_types(df)
-    
-    one_hot_cols = ['gender', 'who_bmi', 'depression_severity', 'anxiety_severity']
-    
-    df = one_hot_encode(df, one_hot_cols)
-    
-    for col in ["depression_treatment", "anxiety_treatment"]:
-        if col in df.columns:
-            df = df.drop(columns=[col])
-            print(f"Dropped column: {col}")
-    
-    df.to_csv(OUTPUT_PATH, index=False) 
-    
-    split_and_save_train_test(
-        df=df,
-        target_col="depression_diagnosis",
-        output_dir = PROCESSED_DIR
-    )
-
 if __name__ == "__main__":
-    main()
+    raw_path = "../raw/training/depression_anxiety_dataset.csv"
+    processed_path = "../pre_processed/processed_depression_anxiety.csv"
+    
+    if not os.path.exists(os.path.dirname(processed_path)):
+        os.makedirs(os.path.dirname(processed_path))
+    
+    df_processed = preprocess_depression_anxiety(pd.read_csv(raw_path))
+    df_processed.to_csv(processed_path, index=False)
+    print(f"Write successful to {processed_path}")
