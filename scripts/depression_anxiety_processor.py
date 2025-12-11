@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = BASE_DIR.parent
 
-INPUT_PATH = PROJECT_ROOT / "raw" / "depression_anxiety_data.csv"
+INPUT_PATH = PROJECT_ROOT / "raw" / "training" / "depression_anxiety_data.csv"
 OUTPUT_PATH = PROJECT_ROOT / "pre_processed" / "processed_depression_anxiety.csv"
 PROCESSED_DIR = OUTPUT_PATH.parent
 OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -99,6 +99,11 @@ def main():
     one_hot_cols = ['gender', 'who_bmi', 'depression_severity', 'anxiety_severity']
     
     df = one_hot_encode(df, one_hot_cols)
+    
+    for col in ["depression_treatment", "anxiety_treatment"]:
+        if col in df.columns:
+            df = df.drop(columns=[col])
+            print(f"Dropped column: {col}")
     
     df.to_csv(OUTPUT_PATH, index=False) 
     
