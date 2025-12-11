@@ -1,0 +1,6 @@
+gender,age,academic pressure,work pressure,cgpa,study satisfaction,job satisfaction,sleep duration,dietary habits,education level,work/study hours,financial stress,employment,have you ever had suicidal thoughts ?,family history of mental illness,pred_class,pred_confidence
+1,18,4,0,8.13,2,0,1,1,0,5,2,0,1,1,1,0.82686627
+0,21,2,0,5.9,3,0,3,1,1,1,1,0,0,0,0,0.9909928
+1,22,5,0,8.97,1,0,0,0,1,9,5,0,0,0,1,0.9790791
+1,20,1,0,5.59,2,0,2,0,1,4,3,0,1,0,0,0.50777006
+0,25,4,0,7.39,3,0,2,2,2,3,2,0,1,0,0,0.5529093

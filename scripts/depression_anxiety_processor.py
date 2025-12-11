@@ -33,18 +33,25 @@ def preprocess_depression_anxiety(df: pd.DataFrame) -> pd.DataFrame:
     df.columns = df.columns.str.lower()
     
     df = df.dropna(axis=0)
+
+    # Dropping these because of leakage
+    drop_cols = [col for col in [
+        'id',
+        'depression_diagnosis', 
+        'depression_treatment', 
+        'depression_severity', 
+        'suicidal'
+    ] if col in df.columns]
+
+    df = df.drop(drop_cols, axis=1)
     df = df[~df['who_bmi'].isin(['Not Availble'])]
-    drop_cols = [col for col in ['id'] if col in df.columns]
-    df = df.drop(columns=drop_cols)
     
-    df['gender'] = df['gender'].map(gender_map)
+    df['gender'] = df['gender'].str.lower().map(gender_map)
     df['who_bmi'] = df['who_bmi'].map(who_bmi_map)
-    df['depression_severity'] = df['depression_severity'].map(severity_map)
     df['anxiety_severity'] = df['anxiety_severity'].map(severity_map)
     
     # Map boolean columns
-    boolean_cols = ['depressiveness', 'suicidal', 'depression_diagnosis', 
-                    'depression_treatment', 'anxiousness', 'anxiety_diagnosis', 'anxiety_treatment', 'sleepiness']
+    boolean_cols = ['depressiveness', 'sleepiness', 'anxiousness', 'anxiety_diagnosis', 'anxiety_treatment']
     for col in boolean_cols:
         if col in df.columns:
             df[col] = df[col].map(boolean_map)

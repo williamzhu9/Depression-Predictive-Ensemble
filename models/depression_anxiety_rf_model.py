@@ -19,8 +19,7 @@ MODEL_PATH = "models_saved/model_depression_anxiety_rf.pkl"
 def train_model(data_path="../pre_processed/processed_depression_anxiety.csv"):
     # Load data
     df = pd.read_csv(data_path)
-    drop_cols = [col for col in ['depressiveness', 'depression_diagnosis', 'depression_treatment', 'depression_severity', 'suicidal', 'anxiousness', 'anxiety_diagnosis', 'anxiety_treatment', 'anxiety_severity'] if col in df.columns]
-    X = df.drop(columns=drop_cols, axis=1)
+    X = df.drop("depressiveness", axis=1)
     y = df["depressiveness"]
     
     # Train-test split
