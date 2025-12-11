@@ -1,5 +1,6 @@
 # main.py
 import pandas as pd
+import numpy as np
 import joblib
 import os
 from scripts.student_depression_processor import preprocess_student_depression
@@ -13,10 +14,18 @@ def load_model(name):
     
 models = {
     "da_rf": load_model("model_depression_anxiety_rf.pkl"),
-    # "da_xg": load_model("model_depression_anxiety_xg.pkl"),
+    "da_xg": load_model("model_depression_anxiety_xg.pkl"),
     "sd_rf": load_model("model_student_depression_rf.pkl"),
     "sd_xg": load_model("model_student_depression_xg.pkl")
 }
+
+MODEL_WEIGHTS = {
+    "da_rf": 1.0,
+    "da_xg": 1.5,
+    "sd_rf": 1.0,
+    "sd_xg": 1.5
+}
+
 
 # Processed data
 feature_groups = [
@@ -140,8 +149,37 @@ for name, model in models.items():
     # Save predictions in a dictionary
     ensemble_preds[name] = pred_df
 
-# Print and save predictions per model
+# Ensemble prediction & voting
+num_rows = list(ensemble_preds.values())[0].shape[0]
+classes = sorted(list(models["da_rf"].classes_))  # assume consistent classes
+
+# Probability array for each model
+proba_matrix = np.zeros((num_rows, len(classes)))
+
+# Combine probabilities with weights
 for name, pred_df in ensemble_preds.items():
-    print(f"Predictions from {name} model:")
-    print(pred_df.head())
-    pred_df.to_csv(f"ensemble_predictions_{name}.csv", index=False)
+    model = models[name]
+    weights = MODEL_WEIGHTS.get(name, 1.0)
+
+    # Get the model's raw probabilities
+    model_probs = model.predict_proba(model_to_data[name])
+
+    # Weighted contribution: weighted sum of probs
+    proba_matrix += model_probs * weights
+
+# Final prediction = argmax of weighted probability sum
+final_preds = np.array(classes)[np.argmax(proba_matrix, axis=1)]
+
+# Highest combined probability per row
+final_confidence = proba_matrix.max(axis=1) / proba_matrix.sum(axis=1)
+
+# Build final output DataFrame
+final_df = input_df.copy()
+final_df["final_pred"] = final_preds
+final_df["final_confidence"] = final_confidence
+
+# Save to CSV
+final_df.to_csv("ensemble_final_predictions.csv", index=False)
+
+print("Weighted voting predictions:")
+print(final_df.head())

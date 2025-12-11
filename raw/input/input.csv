@@ -1,6 +1,6 @@
 Gender,Age,Profession,Academic Pressure,Work Pressure,CGPA,Study Satisfaction,Job Satisfaction,Sleep Duration,Dietary Habits,Degree,Have you ever had suicidal thoughts ?,Work/Study Hours,Financial Stress,Family History of Mental Illness,Depression,school_year,bmi,who_bmi,phq_score,depression_severity,depressiveness,suicidal,depression_diagnosis,depression_treatment,gad_score,anxiety_severity,anxiousness,anxiety_diagnosis,anxiety_treatment,epworth_score,sleepiness
-Male,18,Student,4,0,8.13,2,0,5-6 hours,Moderate,Class 12,Yes,5,2,Yes,1,1,33.33333333,Class I Obesity,9,Mild,FALSE,FALSE,FALSE,FALSE,11,Moderate,TRUE,FALSE,FALSE,7,FALSE
-Female,21,Student,2,0,5.9,3,0,More than 8 hours,Moderate,B.Com,No,1,1,No,0,1,19.84126984,Normal,8,Mild,FALSE,FALSE,FALSE,FALSE,5,Mild,FALSE,FALSE,FALSE,14,TRUE
-Male,22,Student,5,0,8.97,1,0,Less than 5 hours,Unhealthy,BA,No,9,5,No,1,1,25.10239133,Overweight,8,Mild,FALSE,FALSE,FALSE,FALSE,6,Mild,FALSE,FALSE,FALSE,6,FALSE
-Male,20,Student,1,0,5.59,2,0,7-8 hours,Unhealthy,BCA,Yes,4,3,No,0,1,23.73866213,Normal,19,Moderately severe,TRUE,TRUE,FALSE,FALSE,15,Severe,TRUE,FALSE,FALSE,11,TRUE
-Female,25,Student,4,0,7.39,3,0,7-8 hours,Healthy,MBBS,Yes,3,2,No,0,1,25.61728395,Overweight,6,Mild,FALSE,FALSE,FALSE,FALSE,14,Moderate,TRUE,FALSE,FALSE,3,FALSE
+Male,18,Student,4,0,8.13,2,0,5-6 hours,Moderate,Class 12,Yes,5,2,Yes,1,1,37,Class II Obesity,13,Mild,TRUE,FALSE,FALSE,FALSE,15,Moderately severe,TRUE,FALSE,FALSE,14,TRUE
+Female,21,Student,2,0,5.9,3,0,More than 8 hours,Moderate,B.Com,No,1,1,No,0,1,17,Underweight,8,Mild,FALSE,FALSE,FALSE,FALSE,5,Mild,FALSE,FALSE,FALSE,9,FALSE
+Male,22,Student,5,0,8.97,1,0,Less than 5 hours,Unhealthy,BA,No,9,5,No,1,1,28.3,Overweight,15,Mild,TRUE,TRUE,FALSE,FALSE,17,Moderate,FALSE,FALSE,FALSE,15,TRUE
+Male,20,Student,1,0,5.59,2,0,7-8 hours,Unhealthy,BCA,Yes,4,3,No,0,1,23.73866213,Normal,6,Mild,FALSE,FALSE,FALSE,FALSE,15,Mild,FALSE,FALSE,FALSE,11,TRUE
+Female,25,Student,4,0,7.39,3,0,7-8 hours,Healthy,MBBS,Yes,3,2,No,0,1,21,Normal,6,Mild,FALSE,FALSE,FALSE,FALSE,14,Moderate,TRUE,FALSE,FALSE,3,FALSE
