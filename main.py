@@ -185,7 +185,7 @@ final_df["final_pred"] = final_preds
 final_df["final_confidence_percent"] = final_confidence * 100
 
 # Save to CSV
-final_df.to_csv("ensemble_final_predictions.csv", index=False)
+final_df.to_csv("output/ensemble_final_predictions.csv", index=False)
 
 print("Weighted voting predictions:")
 print(final_df.head())
