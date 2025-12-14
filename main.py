@@ -20,8 +20,8 @@ models = {
 }
 
 MODEL_WEIGHTS = {
-    "da_rf": 1.0,
-    "da_xg": 1.5,
+    "da_rf": 0.5,
+    "da_xg": 1.0,
     "sd_rf": 1.0,
     "sd_xg": 1.5
 }
@@ -116,6 +116,8 @@ model_inputs = {}
 processed_inputs = {}
 ensemble_preds = {}
 
+print("Partitioning features...")
+
 for i, features in enumerate(raw_columns):
     # Keep only columns that exist in input_df
     cols_to_use = [c for c in features if c in input_df.columns]
@@ -136,6 +138,8 @@ model_to_data = {
     "sd_xg": processed_inputs["dataset1"]
 }
 
+print("Feeding partitions to models...")
+
 for name, model in models.items():
     df_proc = model_to_data[name]  # select the correct processed dataset
     
@@ -148,6 +152,8 @@ for name, model in models.items():
 
     # Save predictions in a dictionary
     ensemble_preds[name] = pred_df
+
+print("Evaluating predictions and voting...")
 
 # Ensemble prediction & voting
 num_rows = list(ensemble_preds.values())[0].shape[0]
@@ -176,10 +182,10 @@ final_confidence = proba_matrix.max(axis=1) / proba_matrix.sum(axis=1)
 # Build final output DataFrame
 final_df = input_df.copy()
 final_df["final_pred"] = final_preds
-final_df["final_confidence"] = final_confidence
+final_df["final_confidence_percent"] = final_confidence * 100
 
 # Save to CSV
-final_df.to_csv("ensemble_final_predictions.csv", index=False)
+final_df.to_csv("output/ensemble_final_predictions.csv", index=False)
 
 print("Weighted voting predictions:")
 print(final_df.head())
