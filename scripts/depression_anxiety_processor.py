@@ -1,12 +1,8 @@
 import pandas as pd
 import os
+from sklearn.preprocessing import OneHotEncoder
 
 # Mappings
-gender_map = {
-    "male": 1,
-    "female": 0
-}
-
 who_bmi_map = {
     "Underweight": 0,
     "Normal": 1,
@@ -29,6 +25,10 @@ boolean_map = {
     False: 0
 }
 
+onehot_cols = [
+    'gender'
+]
+
 def preprocess_depression_anxiety(df: pd.DataFrame) -> pd.DataFrame:
     df.columns = df.columns.str.lower()
     
@@ -46,7 +46,6 @@ def preprocess_depression_anxiety(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(drop_cols, axis=1)
     df = df[~df['who_bmi'].isin(['Not Availble'])]
     
-    df['gender'] = df['gender'].str.lower().map(gender_map)
     df['who_bmi'] = df['who_bmi'].map(who_bmi_map)
     df['anxiety_severity'] = df['anxiety_severity'].map(severity_map)
     
@@ -55,6 +54,22 @@ def preprocess_depression_anxiety(df: pd.DataFrame) -> pd.DataFrame:
     for col in boolean_cols:
         if col in df.columns:
             df[col] = df[col].map(boolean_map)
+
+    # one-hot encoding
+    # one-hot encoding
+    encoder = OneHotEncoder(sparse_output=False,handle_unknown='ignore')
+    encoded_array = encoder.fit_transform(df[onehot_cols])
+
+    encoded_df = pd.DataFrame(
+        encoded_array, 
+        columns=encoder.get_feature_names_out(onehot_cols),
+        index=df.index
+    )
+
+    df = df.drop(columns=onehot_cols)
+    df = pd.concat([df, encoded_df], axis=1)
+
+    df.columns = df.columns.str.lower()
     
     last_cols = [col for col in boolean_cols if col in df.columns]
     other_cols = [col for col in df.columns if col not in last_cols]

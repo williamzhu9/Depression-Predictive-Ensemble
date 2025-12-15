@@ -20,12 +20,11 @@ models = {
 }
 
 MODEL_WEIGHTS = {
-    "da_rf": 0.5,
-    "da_xg": 1.0,
+    "da_rf": 1.5,
+    "da_xg": 1.5,
     "sd_rf": 1.0,
-    "sd_xg": 1.5
+    "sd_xg": 1.0
 }
-
 
 # Processed data
 feature_groups = [
@@ -33,7 +32,8 @@ feature_groups = [
     [
         "school_year",
         "age",
-        "gender",
+        "gender_male",
+        "gender_female",
         "bmi",
         "who_bmi",
         "phq_scores",
@@ -48,7 +48,8 @@ feature_groups = [
     ],  
     # features in student_depression
     [      
-        "gender",
+        "gender_male",
+        "gender_female",
         "age",
         "academic pressure",
         "work pressure",
@@ -60,7 +61,8 @@ feature_groups = [
         "education level",
         "work/study hours",
         "financial stress",
-        "employment",
+        "profession_employed",
+        "profession_unemployed",
         "have you ever had suicidal thoughts ?",
         "family history of mental illness"
     ],  

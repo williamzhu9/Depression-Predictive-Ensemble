@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+from sklearn.preprocessing import OneHotEncoder
 
 health_multiclass = {
     "Unhealthy": 0, 
@@ -19,17 +20,6 @@ boolean_map = {
     "No": 0
 }
 
-gender_map = {
-    "Male": 1, 
-    "Female": 0
-}
-
-profession_map = {
-    "student": 0, 
-    "unemployed": 0, 
-    "employed": 1
-}
-
 degree_multiclass = {
     "high school": 0, 
     "other": 0, 
@@ -38,11 +28,16 @@ degree_multiclass = {
     "phd": 3
 }
 
+onehot_cols = [
+    "profession",
+    "gender"
+]
+
 def profession_simplification(x):
     if isinstance(x, str):
         x_lower = x.lower()
         if "student" in x_lower:
-            return "student"
+            return "unemployed"
         if "unemployed" in x_lower or "none" in x_lower or "other" in x_lower:
             return "unemployed"
         return "employed"
@@ -73,14 +68,28 @@ def preprocess_student_depression(df: pd.DataFrame) -> pd.DataFrame:
     df["family history of mental illness"] = df["family history of mental illness"].map(boolean_map)
     df["have you ever had suicidal thoughts ?"] = df["have you ever had suicidal thoughts ?"].map(boolean_map)
     df["degree"] = df["degree"].apply(degree_map).map(degree_multiclass)
-    df["gender"] = df["gender"].map(gender_map)
-    df["profession"] = df["profession"].apply(profession_simplification).map(profession_map)
+    df["profession"] = df["profession"].apply(profession_simplification)
     
+    # one-hot encoding
+    encoder = OneHotEncoder(sparse_output=False,handle_unknown='ignore')
+    encoded_array = encoder.fit_transform(df[onehot_cols])
+
+    encoded_df = pd.DataFrame(
+        encoded_array, 
+        columns=encoder.get_feature_names_out(onehot_cols),
+        index=df.index,
+    )
+
+    df = df.drop(columns=onehot_cols)
+    df = pd.concat([df, encoded_df], axis=1)
+
+    df.columns = df.columns.str.lower()
+
     # Rename columns
-    df.rename(columns={"profession": "employment", "degree": "education level"}, inplace=True)
+    df.rename(columns={"degree": "education level"}, inplace=True)
     
-    # Group booleans at the end
-    last_cols = ["employment", "have you ever had suicidal thoughts ?", "family history of mental illness"]
+    # Group columns at the end
+    last_cols = ["have you ever had suicidal thoughts ?", "family history of mental illness"]
     other_cols = [col for col in df.columns if col not in last_cols]
     df = df[other_cols + last_cols]
 
